@@ -1,0 +1,43 @@
+// Define the Haversine function
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 3958.8; // Earth's radius in miles
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+function toRad(value) {
+    return value * Math.PI / 180;
+}
+
+// Get the table and records
+let table = base.getTable("Distance Between Cities");
+
+// Record to find the distance for
+let recordID = input.config()["recordID"];
+let selectedEventRecord = await table.selectRecordAsync(recordID);
+
+// Extract latitude and longitude from the record
+let lat1 = selectedEventRecord.getCellValue("Lat1");
+let lon1 = selectedEventRecord.getCellValue("Long1");
+let lat2 = selectedEventRecord.getCellValue("Lat2"); 
+let lon2 = selectedEventRecord.getCellValue("Long2");
+
+// Calculate the distance
+let distance = haversineDistance(lat1, lon1, lat2, lon2);
+
+// Convert the distance to a string rounded to 2 decimal places and then back to a number
+let roundedDistance = parseFloat(distance.toFixed(2));
+
+// Update the "Distance in Miles" field in the selected record with the rounded distance
+await table.updateRecordAsync(recordID, {
+    "Distance in Miles": roundedDistance
+});
+
+// Output the result
+console.log(`The distance between the two locations is: ${roundedDistance} miles`);
